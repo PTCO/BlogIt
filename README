@@ -1,0 +1,1813 @@
+# DESIGN PHASE
+
+# Step 1: SetUp
+
+Open terminal, enter - npx create-expo-app ./
+Open terminal, enter - npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
+
+# Step 2 Configs
+
+Open package.json
+
+change the "main" property value to "expo-router/entry"
+Open app.config - add "scheme" property with your own scheme name
+
+- used to deeplink expo & react native applications, allowing your app to be open wihin a specific screen directly from a url outside of the app
+
+(Optional) Change the "name" OR "slug" values to what is desired
+
+- "name" is what appears on the app's home screen
+- "slug" is a URL friendly version of the app name
+
+(optinal) change "splash" config options
+
+- this controls the splash screen, which is what shown before cotnent loads, settings and layout
+
+# Step 3 Run App
+
+open terminal, enter & run - npx expo start -c
+
+- -c clear the cache of every previous run instance
+- this command will download & execute the expo start command, thus runing the metro & javascript budler that ships with expo
+- this will create an QR Code to scan with your device, using the expo go app
+
+# Step 4 Expo Go
+
+Download and signup in expo, of not already done
+Use the QR Code scan to launch the test server and development workspce for developing your app
+
+# Step 5 VS Code exetnsions
+
+Search & install ES7+ React/Redux/React-Native snippets extension
+
+- Lets you use auto populate commands like "rnfes" - used to create a starter template of code
+- "rnfes" is a react native functional expert component with styles
+
+# Step 6 Setup Index File
+
+- This file is the home page of your app or in web turns the "/" route, aka the first page a user will see
+- index.jsx file should be in the root of the app folder
+- use the "rnfes" to create a starter template for the index.jsx\
+- next import the StatusBar from expo status bar - import { StatusBar } from 'expo-status-bar'
+- change the const index = () => {} to example below
+
+# Example
+
+import { StatusBar } from 'expo-status-bar';
+import { Text, View } from 'react-native'
+
+export default function App(){
+return (
+<View>
+<Text className="text-2xl font-pblack">Intro to React Native with Expo app!</Text>
+<StatusBar style="auto" />
+</View>
+)
+}
+
+# Step 7 Choosing Styling Method
+
+# StyleSheet Container Method
+
+- at the bottom write const styles = StyleSheet.create({
+  container: {
+  display: flex,
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center'
+  }
+  })
+- On the intended component like the <view> component add style={styles.container} attribute and value, which apply css styles from the object of styles
+
+# Tailwind & Nativewind method
+
+- install nativewind by running - npm install nativewind
+- install tailwind dependency by running - npm install --save-dev tailwindcss@3.3.2
+- next setup tailwind config by running - npx tailwindcss init
+- this creates a tailwindcss.config.js file
+- inside the tailwind config replace the "content: []" value with content: ["./app/**/*.{js, jsx, ts, tsx}"]
+- the format is "./folderName" then /\*_/ which means everything within all the folders within it, then "/_" which means all the files, then ".{file extensions}"
+- this will tell tailwind css to apply styling affect to all files, with he specified types or extension, inside the src folder
+- next inside babel.config.js add the "plugins: []" key pair and value
+- [] value should be ["nativewind/babel"]
+- use ctrl + c to restart expo server, then run npx expo start -c
+- after the steps above tailwind should be available for use,
+- remove the const styles from all files inside the src folder and the { Stylesheet } imports from 'react-native'
+- and instead use the className="" attribute and enter tailwindcss values i.e. className="flex-1 items-center"
+- view the tailwindcss styles doc to find more - https://tailwind css.com/docs
+
+# Setup Of Theme (Colors)
+
+- typically you would refer to your figma or storyboard/wireframe design to know what colors and fonts to use within the app
+- inside the tailwind.config.js file add " colors: {} " within the " theme: {} "
+- inside the colors object you can add key pairs like "primary: '' " and a color value - " colors: { primary: '#161622' } "
+
+# Setup Of Theme (Fonts)
+
+- inside root directory create an "assets" folder
+- create a fonts folder and upload any .ttf font files that are needed or will be used inside the tailwind config
+- inside the theme object you can add a " fontFamily: {} " object with its own set of key pair and values - " fontFamily: { pthin: ["Poppins-Thin", "sans-serif"] } "
+- the format is fontFamily: ["main font", "backup font"]
+- import and use the useFont() hook to import the fonts stored inside the assets fonts folder - " import { useFonts } from 'expo-font' "
+- use useFpnt inside RootLayout = () => {
+  const [fontsLoaded, error] = useFonts({
+  "fontsName": require("link or path where font file is located")
+  "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
+  })
+
+  return ()
+  }
+
+- you want to use a useEffect to check if a error occurs when fonts attempt to load
+- you also want to check if fonts load correctly, then display a SplashScreen
+- a SplashScreen is a screen or overlay that hides a blank or unloaded screen from the viewer until all the page content loads
+- import it inside the \_layout.jsx or file your using the useFonts() - " import { SplashScreen } from 'expo-router' "
+- inside useEffect({
+  if(error) throw error
+  if(fontLoaded) SplashScreen.hideAsync() - .hideAsync hides the SplashScreen immediately, so be sure content to be shown is loaded else users will see a blank screen
+  }, [fontsLoaded, error])
+
+  # Example
+
+  SplashScreen.preventAuthHideAsync() - prevents the splash screen from automatically hiding before content loading is complete
+
+  RootLayout = () => {
+
+  const [fontsLoaded, error] = useFonts({
+  "fontsName": require("link or path where font file is located")
+  "Poppins-Black": require("../assets/fonts/Poppins-Black.ttf"),
+  })
+
+  useEffect({
+  if(error) throw error
+  if(fontLoaded) SplashScreen.hideAsync()
+  }, [fontsLoaded, error])
+
+  if(!fontsLoaded && !error) return null; - if no error occured and fonts did not load stops the content from rendering
+
+  return ()
+  }
+
+- next use fonts inside the className attribute - "<Text className="font-fontNameFromKeyInsideFontFamilyObjectFromTheme">Hello</Text> "
+- example - "<Text className="font-pthin">Hello</Text> "
+
+# Setup of Constants
+
+- create a constants folder in the root directory of the app, this will container js files that import and export the needed content, like icons and images, used in the app
+- create a icon.js file which will import, then export a icon, see example below
+- in the example below the bookmark icon is import from the assets folder and then export from the icon.js file
+- this will allow the use of the bookmark icon anywhere in the app, where it is imported
+- repeat these steps for other icons and images or create a new js for different types of content
+
+# Exammple
+
+- import bookmark from "../assets/icons/bookmark.png";
+- export default {
+  bookmark
+  }
+
+# Key reminders
+
+- any font families used must be imported
+- Be sure the folder name used in the content: [] key pair and value inside the tailwind config is correct
+- restart the expo server after setup of tailwind and babel config files
+
+# Images
+
+- when using the <Image /> within the source={}, if the image is a url then source should use the uri key - source={{uri: url}}
+- if its an local image then just place the image path or value in the source - source={image}
+- the resizeMode='' value controls how an image fits its container
+- 'contain' will make it fit its set size regardless of container size
+- 'cover' will make the image stretch to fit it container's size
+
+# Step 8 Rendering different screens
+
+# Slot method
+
+- Create a \_layout.jsx in the app folder
+- use the rnfe to create a template
+- change Label to RooyLayout
+- use "import { Slot } from 'expo-router'"
+- place the <Slot /> inside the RooyLayout = () => {
+  return <Slot />
+  }
+- the Slot component renders the current child route
+- Usually the slot component is wrapped in a react fragment <><Slot /></>
+
+# Stack Of Screens Methods
+
+- inside \_layout.jsx use " import { Stack } from 'expo-router' "
+- inside the RootLayout = () => {
+  return (
+  <Stack>
+  <Stack.Screen name="index" options={{headerShown: false}} />
+  </Stack>
+  )
+  }
+- name="index" links this to the index page and all subsequent routes within the app folder
+- to test it create a new file i.e. a profile.jsx file
+- use rnfe to create a template
+- to navigate to this new file or component return to the index.jsx file
+- import { Link } from 'expo-router'
+- add the <Link> componnt to the return () inside index.jsx
+- the Link component has a href="" attribute, you can set the value to the the name of the new file "profile" in this case - <Link href="profile"></Link>
+- clicking the link will navigate user to the intended screen
+- you usually want to navigate to the home page or login page
+
+# Step 9 File & Folder Structure Setup
+
+# Route Group
+
+- a "Route Group" allows you to add additional screens within it, that will inherit a special layout, like a bottom nav bar
+- surrounding a folder name with () makes it a "Route Group"
+
+# Auth Route Group
+
+- inside the main app folder create another folder named (auth)
+- inside the (auth) folder create a \_layout.jsx using "rnfe" to create the templat needed and change label to AuthLayout
+- this layout file will hold the shared special layout for each file or screen inside it
+- files in this folder will be for the auth or login/signup routes or screen, so they need their own special layout, for example they need a layout without any navigation bar
+- next create a sign-in.jsx & sign-up.jsx file inside (auth) folder
+
+# Home Route Group
+
+- inside the main app folder create another folder named (tabs)
+- (tabs) folder will contain the main content like home, profile or the content a logged user should have access to
+- create a \_layout.jsx file using the "rnfe" command and change label to TabsLayout
+- this layout file will contain the navigation bar, that goes on each screen inside (tabs) folder, so users can switch between each of the screens of content
+- next create as many files or screen as needed, such as home.jsx, profile.jsx and more as needed, using the "rnfe" command and renaming the labels
+
+# Search Dynamic Route
+
+- create a search folder and add a new file named [query].jsx, using the "rnfe" command and renaming the label Search
+- [query].jsx allows you to rename the page or get the query data for the specific search the user is trying to
+
+# Step 10 Create The Navigation
+
+# Linking Index
+
+- go to the index file and change the <Link> component href to href="/home" or use any file name inside the (tabs) folder
+- this will show the \_layout.jsx file special layout inside the (tabs) folder, because it is shown on every file inside the (tabs) folder
+
+# Create navigation bar
+
+- inside the \_layout.jsx file inside (tabs) import { Tabs , Redirect } from expo router - " import {Tabs, Redirect } from 'expo-router' "
+- next inside the TabsLayout use the Tabs component & inside it use the Tabs.Screen component as well - const TabsLayout = () => {
+  return (
+  <>
+  <Tabs>
+  <Tabs.Screen - Tabs.Screen will render each tab option inside bottom nav bar
+  name="home" - name's value must be on of the names of the files inside the (tabs) folder, all the other file names will be automatically rendered with thier own nav option
+  />
+  </Tabs>
+  </>
+  )
+  }
+- the Tabs.Screen component has a options={} attribute which allows you to customize the nav options
+- the default options to configure are - options={{
+    title: 'Home',
+    headerShown: false - typically always false
+    tabBarIcon: ({color, focused}) => () - this function is wher you return a styled nav icon to be used in the tab navigation bar
+  }}
+
+# Styling Or Creating Tab Icon
+
+- above the TabsLayout = () => {}, create another React component function called TabIcon, see example below
+
+# Example
+
+- const TabIcon = ({icon, color, name, focused}) => { - the props are the characteristics of the icon that get passed in
+  return (
+  <View>
+  <Image source={} />
+  </View>
+  )
+  }
+
+# tabBarIcon use
+
+- next place the <TabIcon /> component, with all the necessary props, inside the tabBarIcon: ({color, focused}) => ( <TabIcon icon={} color={} /> )
+- use the constants file to import the needed icons and use them inside the icon={} property
+- then fill in the other prop values with the correct data, see example below
+
+# Example
+
+At the top of the \_layout.jsx - import { icons } from '../../constants';
+
+- tabBarIcon: ({color, focused}) => (
+  <TabIcon icon={icons.bookmark} color={color} name="bookmark" focused={focused}/>
+  )
+
+- next inside the TabIcon = () => {}, use the passed in prop icon value inside the source attribute or prop on the Image component
+- the resizeMode="" prop can also be used to control how the image resizes to the contaner that it is in
+- tintMode={color} controlls the icon color shown by default
+- add the desired tailwind styles to the className="" attribute/prop
+- next add a <Text> component which uses the passed in name prop or attribute
+
+# Example
+
+- const TabIcon = ({icon, color, name, focused}) => { - the props are the characteristics of the icon that get passed in
+  return (
+  <View className="items-center justify-center gap-2">
+  <Image source={icon} resizeMode="contain" tintColor={color} className="w-6 h-6"/>
+  <Text className={`${focused ? 'fontName':'fontName'} text-xs`} style={{color: color}}>{name}</Text> - focused prop value is a true or false, so if true it will load a font or if false it will load a different font
+  </View>
+  )
+  }
+- two titles for the tab icon will show, since the tab bar auto generates one
+- so to remove the unwanted title use the attribute/prop screenOptions on the <Tabs> component and set the value of tabBarShowLabel to false
+- to change the active color on a selected tab bar icon use the tabBarActiveTintColor: '', see example below
+- example is like so - <Tabs screenOptions={{ tabBarShowLabel: false, tabBarActiveTintColor: '#FFA001' }}
+- to change the inactive color on a selected tab bar icon use the tabBarInactiveTintColor: '', see example below
+- example is like so - <Tabs screenOptions={{ tabBarShowLabel: false, tabBarInactiveTintColor: '#CDCDE0' }}
+- to style tab nav bar itself use tabBarStyle: { backgrounColor: '#161622' }
+- example is like so - <Tabs screenOptions={{ tabBarShowLabel: false, tabBarStyle: { backgrounColor: '#161622', borderTopWidth: 1, borderTopColor: '#232533' } }}
+
+- next copy the <Tab.Screen /> component and paste it to equal the desired number of different screens or number of files inside the (tabs) folder
+- change each copied <Tab.Screen />'s title prop value, all name prop values and icon prop value
+
+# Step 11 Create OnBoarding / Introduction Screen
+
+- this screen will be your index.jsx file in the root of the app folder
+- import SafeAreaView & ScrollView from react-native-safe-area-context & the other from react-native
+
+# Example
+
+- import { SafeAreaView } from "react-native-safe-area-context";
+- import { ScrollView } from 'react-native';
+
+- the <SafeAreaView> container will wrap all content for the index screen
+- it should at least have the h-full class applied to it - <SafeAreaView className="h-full">
+- the <ScrollView> should be nested inside the <SafeAreaView> & have the " contentContainerStyle " attribute - <Scrollview contentContainerStyle={{height: '100%'}}>
+- the "contentContainerStyle" is imported because not all screens will fit full height of the screen's content, this makes it so that the entire screen is scrollable
+- once these two components are used you add the necessary view and other components within the <ScrollView>
+
+# Example
+
+-     return (
+        <SafeAreaView className="bg-primary h-full">
+            <ScrollView contentContainerStyle={{height: '100%'}}>
+                <View className="w-full justify-center items-center px-4">
+                    <Image source={images.logo} className="w-[130px] h-[84px]" resizeMode="contain" />
+                    <Image source={images.cards} className="max-w--[380px] w-full h-[300px]" resizeMode="contain"/>
+                    <View className="mt-5">
+                        <Text  className="text-3xl text-white font-bold text-center">
+                            Discover Endless Possibilities with{' '}
+                            <Text className="text-secondary-200">Aora</Text>
+                        </Text>
+                        <Image source={images.path} className="w-[136px] h-[15px] absolute -bottom-2 -right-8" resizeMode="contain"/>
+                    </View>
+                    <Text className="text-sm font-pregular text-gray-100 mt-7 text-center">Where creativity meets innovation: embark on a journey of limitless exploration with Aora</Text>
+                    <CustomButton />
+                </View>
+            </ScrollView>
+        </SafeAreaView>
+  )
+
+# Create A Custom Button
+
+- its not technically a button, but a " touchable opacity"
+- you want to create a new custom button component and use props to give it dynamic functionality and styling
+- import "TouchableOpacity" from react native - " import { TouchableOpacity } from 'react-native"
+- next give it some classes for styling
+- then give it some props to pass in to make it dynamic like "title", "handlePress", "containerStyles", "textStyles" & "isLoading"
+- use the "onPress" attribute for the TouchableOpacity component, with the handlePress prop value
+- use the "title" value for the <Text> comp
+- use string literal to iclude the "containerStyles" & "textStyles" prop values in the "className" of the "TouchableOpacity" & <Text>
+- use the "isLoading"value to change the styling & disable the button based on whether the button has been clicked or is loading or is not
+- the "activeOpacity" attribute controls the opacity of the button when a user clicks it - .7 is a good value
+
+# Example
+
+- const CustomButton = ({title, handlePress, containerStyles, textStyles, isLoading}) => {
+  return (
+  <TouchableOpacity className={`bg-secondary rounded-xl min-h-[62px] items-center justify-center ${containerStyles} ${isLoading ? 'opacity-50':''}`} disabled={isLoading
+
+      } onPress={handlePress} activeOpacity={0.7}>
+          <Text className={`text-primary font-psemibold text-lg ${textStyles}`}>{title}</Text>
+      </TouchableOpacity>
+
+  )
+  }
+
+- next pass in values necessary for the custom button
+
+# Example
+
+- <CustomButton title="Continue with Email" handlePress={() => {}} containerStyles="w-full mt-7
+
+# Step 12 Status Bar
+
+- the <StatusBar /> component controls the status bar that most mobile devices have, which displays data such as battery life and notification tooltips/icons
+- this typically is inside the index.jsx or onboarding/intro screen of the app
+- typically this by default is a dark, hard to notice color so configuring is helpful
+- import "StatusBar" from expo status bar - import { StatusBar } from "expo-status-bar";
+- the "style='light" & "backgroundColor='#161622'" will give the status bar a dark background color and data icon a light or white color
+
+# Example
+
+- export default function App() {
+  return (
+  <SafeAreaView className="bg-primary h-full">
+  <ScrollView contentContainerStyle={{height: '100%'}}>
+  <View className="w-full justify-center items-center px-4">
+  </View>
+  </ScrollView>
+  <StatusBar  backgroundColor="#161622" style="light"/>
+  </SafeAreaView>
+  )
+  }
+
+  # Step 13 Routing & Redirecting
+
+- users need to be able to navigate around the app
+- use the "Redirect" & "router" to allows user to navigate around the app, like when clicking a <TouchableOpacity> or button or using a onPress={() => {}}
+- "router.push('/file name')" will navigate user to the sign-in file
+- "router.replace()" like push() will navigate the user to the intended file path or screen, but will not keep the route path history, so users cannot not go back to the previous screen, "User this for logouts or dead end routes"
+
+# Example
+
+- <CustomButton title="Continue with Email" handlePress={() => router.push('/sign-in')} containerStyles="w-full mt-7"/
+
+# Step 14 Create Custom Form Field
+
+- typically within the components folder, create a FormField.jsx
+- it should take in props such as, title, value, placeholder, handleChangeText, otherStyles, keyBoardType
+- "handleChangeText" should have a callback function as its value, which is called when a user makes a change in the field input
+- "keyBoardType" this usefull for auto filling info for a form, such emails, passwords & so on
+- the <FormField /> should contain a <TextInput /> component from react native
+- <TextInput /> is the text input field users will interact with, it should include the props value, placeholder, placeHolderTextColor, onChangeText & secureTextEntry
+- "secureTextEntry" is used for sensitive input fields, like for passwords, it accepts a boolean (true/false) value
+- use a useState value (showPassword) with a condition statement to see if it a user should see what they are typing or not
+- "placeholderTextColor" controls the place holder text color
+
+# Example Props & Values
+
+- <FormField title="Email" value={form.email} handleChangeText={(e) => setForm({...form, email: e})} otherStyles="mt-7" keyBoardType="email-address"/>
+
+# Example Text Input
+
+- <TextInput className="flex-1 text-white font-psemibold text-base" value={value} placeholder={placeholder} placeholderTextColor="#7b7b8b" onChangeText={handleChangeText} secureTextEntry={ title === 'Password' && !showPassword}/>
+
+# Example FormField Comp
+
+- const FormField = ({title, value, placeholder, handleChangeText, otherStyles, ...props}) => {
+
+      const [showPassword, setShowPassword] = useState(false)
+
+      return (
+          <View className={`space-y-2 ${otherStyles}`}>
+          <Text className="text-base text-gray-100 font-pmedium">{title}</Text>
+          <View className="w-full h-16 px-4  border-2 border-black-200 bg-black-100 rounded-xl focus:border-secondary items-center">
+              <TextInput className="flex-1 text-white font-psemibold text-base" value={value} placeholder={placeholder} placeholderTextColor="#7b7b8b" onChangeText={handleChangeText} secureTextEntry={ title === 'Password' && !showPassword}/>
+          </View>
+          </View>
+      )
+
+  }
+
+# Adding hide/unhide button for sensitive inputs
+
+- when using the "secureTextEntry" prop on a <TextInput> means users will have the option to hide or un hide the text they have entered
+- you can do this with using a <TouchableOpacity>'s onPress to change a useState like (showPassword) to true/false, which will change the hide icon and the "secureTextEntry" boolean value to hide or show the user's text
+
+# Example
+
+- <View className="flex-row w-full h-16 px-4  border-2 border-black-200 bg-black-100 rounded-xl focus:border-secondary items-center">
+  <TextInput className="flex-1 text-white w-full font-psemibold text-base" 
+  value={value} placeholder={placeholder} placeholderTextColor="#7b7b8b" onChangeText={handleChangeText} secureTextEntry={ title === 'Password' && !showPassword}/>
+
+  {title === 'Password' && (
+  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+  <Image source={showPassword ? icons.eye:icons.eyeHide} className="w-6 h-6" resizeMode='contain' />
+  </TouchableOpacity>
+  )}
+  </View>
+
+# Step 15 Auth Screens Setup
+
+- typically you would create a "sign-in.jsx" type file for when user need to login
+- every file in a (folder) beside the "\_layout.jsx" should have a <SafeAreaView> with a <ScrollView> nested to wrap all the content for those screens
+- the "\_layout.jsx" should have a <Stack> with a <Stack.Screen> nested for each auth screen, such as sign-in and sign-up
+
+# Example sign-in jsx
+
+- import { SafeAreaView } from 'react-native-safe-area-context';
+- import { View, ScrollView } from 'react-native
+
+- return (
+  <SafeAreaView className="bg-primary h-full">
+  <ScrollView>
+  <View className="w-full justify-center h-full px-4 my-6 ">
+  <Image  source={images.logo} className="w-[115px] h-[35px]" resizeMode='contain'/>
+  <Text className="text-2xl text-white text-semibold mt-10 font-psemibold">
+  Log in to Aora
+  </Text>
+  <FormField title="Email" value={form.email} handleChangeText={(e) => setForm({...form, email: e})} otherStyles="mt-7" keyBoardType="email-address"/>
+  <FormField title="Password" value={form.password} handleChangeText={(e) => setForm({...form, password: e})} otherStyles="mt-7"/>
+
+    <CustomButton title="Sign In" handlePress={submit} containerStyles="mt-7" isLoading={isSubmitting}  />
+    <View className="justify-center pt-5 flex-row gap-2">
+      <Text className="text-xl text-gray-100 font-pregular">Don't have an account?</Text>
+      <Link href={"/sign-up"} className='text-lg font-psemibold text-secondary'>Sign Up</Link>
+    </View>
+
+  </View>
+  </ScrollView>
+
+</SafeAreaView>
+  )
+
+# Example \_layout.jsx
+
+- import { Stack } from 'expo-router';
+- import { StatusBar} from 'expo-status-bar'
+
+- const AuthLayout = () => {
+  return (
+  <>
+  <Stack>
+  <Stack.Screen name="sign-in" options={{headerShown: false}}/>
+  <Stack.Screen name="sign-up" options={{headerShown: false}}/>
+  </Stack>
+  <StatusBar backgroundColor="#161622" style="light" />
+  </>
+  )
+  }
+
+# Step 16 Get Rid of Top <index & (foldername)
+
+- inside the main \_layout.jsx or RootLayout = () => {}, create another <Stack><Stack.Screen></Stack> and change the headerShown value to false
+- next change the name prop value to the match the name of the folder group name (foldername), like (auth)
+- do this for every folder group (folderName) inside the app
+- you also want to do this for the search query file ([query].jsx) inside the search folder
+
+# Example
+
+- const RootLayout = () => {
+  return (
+  <Stack>
+  <Stack.Screen name='index' options={{headerShown: false}} />
+  <Stack.Screen name='(auth)' options={{headerShown: false}} />
+  <Stack.Screen name='(tabs)' options={{headerShown: false}} />
+  <!-- <Stack.Screen name='/search/[query]' options={{headerShown: false}} /> -->
+  </Stack>
+  )
+
+  }
+
+# Create Full Video Playback
+
+- run npm install expo-av, which is necessary to import custom videos into your app
+- import Video and ResizeMode from expo-av
+- the <Video /> is needed to import a video, it has necessary props
+- source={} will be linked to video file or url
+- resizeMode={} which uses the ResizeMode imported, this has a .Contain property that should be used so the video is contained within its wrapper
+- useNativeControls will display the default react native video playback controls, like pause, fast forward, ecetra
+- shouldPlay will automatically play the specified video
+- onPlaybackStatusUpdate={(status) => {}} returns the statu s of the video playback, the status value has a "didJustFinish" prop, that is a boolean
+- use it to check if the video is finished and if so, you can use the setPlay() function and set it to false, to return the video to its thumbnail or not playing view
+
+# Example Of Video
+
+- <Video source={{uri: item.video}} className="w-52 h-72 rounded-[35px] mt-3 bg-white/10" resizeMode={ResizeMode.CONTAIN} useNativeControls shouldPlay/>
+
+# Custom animations with React Native Animatable
+
+- run npm install react-native-animatable to install the necessary dependencies
+- next import all the necessary code - import \* as Animatable from 'react-native-animatable'
+- next create a component and return the <Animatable.View>, this component takes a few necessary prop
+- animation={}, duration={} are needed for this to function
+- the duration={} takes an integer value, which is in milliseconds - duration={500}
+- before passing in values for the props, create an object with properties of the desired animation effect, like scale for example
+- inside the animation={} place a condition on when to apply the animation like on a active state
+
+# Example of Animate Object
+
+- const zoomIn = {
+  0: {
+  scale: 0.9
+  },
+  1: {
+  scale: 1
+  }
+  }
+
+# Example of Animation Implementation
+
+# Component with values - <TrendingItem activeItem={activeItem} item={item}/>
+
+- const zoomIn = {
+  0: {
+  scale: 0.9
+  },
+  1: {
+  scale: 1
+  }
+  }
+
+const zoomOut = {
+0: {
+scale: 1
+},
+1: {
+scale: 0.9
+}
+}
+
+const TrendingItem = ({ activeItem, item}) => {
+const [play, setPlay] = useState(false);
+
+return (
+<Animatable.View
+className="mr-5"
+animation={activeItem === item.$id ? zoomIn : zoomOut}
+duration={500} >
+{play ? (
+<Text className="text-white">Playing</Text>
+): (
+<TouchableOpacity className="relative justify-center items-center" activeOpacity={0.7} onPress={() => setPlay(true)}>
+<ImageBackground source={{uri: item.thumbnail}} />
+</TouchableOpacity>
+)}
+</Animatable.View>
+)
+}
+
+-
+-
+-
+
+# LOGIC PHASE
+
+# Step 1 Appwrite Setup
+
+- Go to https://appwrite.io/ and create an account, be sure to choose the free package option
+- after setting up the account, you will be directed to your dashboard
+- click create new project to make a new database or library appwrite project for your app
+- create a new project name & bundle ID / package name which is the bundle ID, the recommended format is (com.yourcompanyname.appname)
+- next click skip optional steps, this will create a new project and put you on the project's dashboard
+
+# Bundle ID Example
+
+- com.ptco.aora
+
+# app.json Setup
+
+- within the "ios" & "andriod" objects use the key "package" and bundle ID as the value
+
+# Example app.json
+
+- "ios": {
+  "supportsTablet": true,
+  "package": "com.ptco.aora"
+  },
+  "android": {
+  "adaptiveIcon": {
+  "foregroundImage": "./assets/images/adaptive-icon.png",
+  "backgroundColor": "#ffffff"
+  },
+  "package": "com.ptco.aora"
+  },
+
+# appwrite.js Setup
+
+- copy the project id from the appwrite project dashboard - should be the id next to the name of the project
+- back in your app root directory, create a lib folder and create a appwrite.js file
+- within appwrite.js you want to create a "appwriteConfig" object with the "endpoint", "platform" & "projectId" keys
+- "endpoint" value should be your self hosted db or you can use appwrite's cloud service "https://cloud.appwrite.io/v1"
+- "platform" value should be the bundleID "com.ptco.auro"
+- "projectId" value should be the project ID you got from the appwrite project dashboard
+
+# Example
+
+- export const appwriteConfig = {
+  endpoint: "https://cloud.appwrite.io/v1",
+  platform: "com.ptco.aora",
+  projectId: "66fec8b0003d3b732bd4"
+  }
+
+# Appwrite User Auth Sign In / SIgn Up Form Setup
+
+# Database SetUp
+
+- within appwrite dashboard option, click "Databases" and click create database
+- give it an appropriate name and this auto generate a db & its ID
+- next back with "appwrite.js" in lib folder add a "databaseId" key and the new db id value to the appwriteConfig object
+
+# Create DB Collections
+
+- next within databse appwrite dashboard, click create collection and give it a name relative to the type of data it will hold, so "users" for colletion of user accounts
+- this will create users database collection, with its own id
+- next within appwriteConfig object create a "userCollectionId" key with the new collection id as its value
+- create as many collections as necessary for the DB, like a "videos" for user uploaded videos & use the new ID's generated with the appwriteConfig object
+
+# Example
+
+- export const appwriteConfig = {
+  endpoint: "https://cloud.appwrite.io/v1",
+  platform: "com.ptco.aora",
+  projectId: "66fec8b0003d3b732bd4",
+  databaseId: "66fedb690024b00dd21a",
+  userCollectionId: "66fedd7400215e2798c1",
+  videoCollectionId: "66fee07600173885d678"
+  }
+
+# Adding Collection Attributes
+
+- attributes are the types of data stored with each collection, such as "usernames" which would be a "String" type of data
+- within the collection dashboard on appwrite, click the attribute option and click create attribute
+- give the attribute an appropriate name and size, so like "username" with a size of 100, which would be 100 characters
+- create as many attributes as necessary, be sure to include a "id" of some sort, for the collection, like "accountId"
+
+# Enable CRUD Permissions
+
+- under the settings option with the chosen collection's dashboard, like the "users" collection, scroll to the permission options
+- next click "+" and "any" option to bring up the CRUD operation permissions and select every option - "CREATE" "READ" "UPDATE" & "DELETE"
+- this will allow you to make SQL CRUD requests to change or alter the data with your collection
+
+# Setting Perimissions for Associated Collections
+
+- when setting permissions for assocaited collections, like a "videos" collection, associated with a "users" collection instead of selecting "any" it should "all users"
+- when setting permissions for storage buckets , like a "files" bucket, it should have a "all users" CRUD permission and a "guest" READ only CRUD permission
+
+# Create Data Association Relationships
+
+- like with sequelize you would want to associate data with other forms of data, like a cart of items (many) belong to one user (one), this would be a many - one relationship
+- within collection dashboard, under the attribute options, create a new attribute and chose the "Relationships" option
+- you'll have the "one-way relationship" & "two - way relationship" options
+- in most cases the "one - way " option is what you will use
+- for the videos collection for instance, select one-way option
+- within the settings shown, select the collection you want to make the relationship with (users in this example)
+- next under the "Relation" choice, select Many to one
+- this relation makes sense since a user would have many videos owned by one creator
+- also change the "Attribute key" name to one that matches the kind of relation it is, like "creater" or "author"
+- next under the "On deleting a document" option, choose the "Set Null", this prevents the associated user from being deleted when the video in question is deleted
+- "CASCADE" is another option, this would delete any user associated with the deleted video
+
+# Create the Storage Bucket
+
+- this where data like video chunk data is stored
+- within the "project" dashboard, select the Bucket option and select create a new bucket
+- give the bucket an appropriate name, like "files", select create, which generates a new bucket id
+- within the appwriteConfig object add a "storageId": key with the new bucket id as its value
+
+# Example
+
+- export const appwriteConfig = {
+  endpoint: "https://cloud.appwrite.io/v1",
+  platform: "com.ptco.aora",
+  projectId: "66fec8b0003d3b732bd4",
+  databaseId: "66fedb690024b00dd21a",
+  userCollectionId: "66fedd7400215e2798c1",
+  videoCollectionId: "66fee07600173885d678",
+  storageId: "66feec0300392f0369a5"
+  }
+
+# Bucket File Extension Settings
+
+- you can define what file types or extension are allowed to be uploaded to a bucket
+- options are "jpg", "png", "svg", "gif", "html", "pdf", "mp4" and other valid file type
+- within the chosen bucket's dashboard, under settings, scroll to file extension and enter the appropriate extensions needed
+
+# Step 2 Appwrite React Native SDK
+
+- go to the react native sdk for appwrite repository - https://github.com/appwrite/sdk-for-react-native
+- coppy the installation command into app's termninal and run - npx expo install react-native-appwrite react-native-url-polyfill
+- next go to the appwrite.js file and init the sdk, you can get the code for this udner the installation step on the github repository
+
+# Example of Initializing the SDK inside appwrite.js
+
+- import { Client } from 'react-native-appwrite';
+  export const appwriteConfig = {
+  endpoint: "https://cloud.appwrite.io/v1",
+  platform: "com.ptco.aora",
+  projectId: "66fec8b0003d3b732bd4",
+  databaseId: "66fedb690024b00dd21a",
+  userCollectionId: "66fedd7400215e2798c1",
+  videoCollectionId: "66fee07600173885d678",
+  storageId: "66feec0300392f0369a5"
+  }
+
+  // Init your React Native SDK
+  const client = new Client();
+
+  client
+  .setEndpoint('http://localhost/v1') // Your Appwrite Endpoint
+  .setProject('455x34dfkj') // Your project ID
+  .setPlatform('com.example.myappwriteapp') // Your application ID or bundle ID.
+  ;
+
+- next change the values of the .set() function to match the "endpoint", platform & projectId values of the appwriteConfig object
+
+# Example
+
+- client
+  .setEndpoint(appwriteConfig.endpoint) // Your Appwrite Endpoint
+  .setProject(appwriteConfig.projectId) // Your project ID
+  .setPlatform(appwriteConfig.platform) // Your application ID or bundle ID.
+  ;
+
+# First Request Test
+
+- its best practice to test sending a request to the DB
+- first you want to import "Account", "ID" & "Client" from 'react-native-appwrite'
+- then copy the snippet of code from the sdk github repository
+
+# Example of Snippet
+
+- const account = new Account(client);
+
+// Register User
+account.create(ID.unique(), 'me@example.com', 'password', 'Jane Doe')
+.then(function (response) {
+console.log(response);
+}, function (error) {
+console.log(error);
+});
+
+- next create a callback function "createAccount" and put the code below "Register User" inside of it
+
+# Example of callback
+
+- export const createUser = () => {
+  // Register User
+  account.create(ID.unique(), 'me@example.com', 'password', 'Jane Doe')
+  .then(function (response) {
+  console.log(response);
+  }, function (error) {
+  console.log(error);
+  });
+  }
+
+# Running Test Using Sign Up Form
+
+- within the submit = () => {} inside the sign-up.jsx or equivalent auth screen/file, call the createUser(), this will create a "placeholder" auth user within your appwrite
+
+# Complete Create A User Function
+
+- first you want to create 3 variables assigned to 3 appwrite Objects, which are Account(client), Avatars(client) & Databases(client);
+- the (client) value is necessary to connect the clientn your app with these appwrite objects and their functions
+- the client variable or value comes from where you initialize your appwrite sdk for your app - const client = new Client();
+- each of these appwrtie objects have special functions that allow you create new user accounts, sessions and add new data to database collections
+
+# Example of functions
+
+- account.create() - this will create a new user account object to be used in the rest of the user creation process
+- avatars.getInitials() - this will create a unique avatar/potrait url using the user's name's initials
+- databases.createDocument() -
+
+# Example of 3 variables
+
+- const account = new Account(client);
+- const avatars = new Avatars(client);
+- const databases = new Databases(client);
+
+# Step 3 Create a createUser()
+
+# Function Create User
+
+- export const createUser = async (email, password, username) => {
+  try {
+  const newAccount = await account.create(
+  ID.unique(),
+  email,
+  password,
+  username
+  )
+  if(!newAccount) throw Error;
+
+          const avatarUrl = avatars.getInitials(username);
+
+          await signIn(email, password);
+
+          const newUser = await databases.createDocument(
+              appwriteConfig.databaseId,
+              appwriteConfig.userCollectionId,
+              ID.unique(),
+              {
+                  accountId: newAccount.$id,
+                  email: email,
+                  username: username,
+                  avatar: avatarUrl
+              }
+          )
+
+          return newUser;
+      } catch (error) {
+          console.log(error);
+          throw new Error(error);
+      }
+
+  }
+
+# Function Breakdown
+
+- this function is asynchronous, and should have an equal number of params to match the data needed to create a user (email, password, username)
+- a try catch block is helpful to catch any errors necessary
+- create a variable to store a new user's account data, this should equal the account.create()
+- the "account.create()" accepts the params needed for creating an account, the ID.unique() will generate an ramdon unique id for the user's account
+- below this run an error check to make sure the account.create() worked
+- next create an variable to store a unique id for the user's avatar or portrait, use the avatars.getInitials() to get this url, it takes the username of the user's account
+- run the signIn() from the example below
+- next step is to create an "document" for the new user to store in the databases's "user" collection, using the databases.createDocument()
+- three necessary params are the "databaseId" , "userCollectionId / or the collection id for the intended collection" & "collectionID" which is made using the ID.unique()
+- the param after this is the data intended to be stored within the collection
+- after the steps above, returning the newUser document can be used
+
+# Function SignIn
+
+- export async function signIn(email, password) {
+  try {
+  const session = await account.createEmailSession(email, password);
+  return session;
+  } catch (error) {
+  throw new Error(error);
+  }
+  }
+
+# Breakdown
+
+- this function is asynchronous, and should have an equal number of params to match the data needed to sign an user in, (email, password) for example
+- a try catch block is helpful to catch any errors necessary
+- create a variable to store a session, which is created by the account.createEmailSession()
+- account.createEmailSession() will create a user session if the email and password passed in pass a combination check, to see if the data provided mathces a valid user's account
+
+# Update Sign Up Screen
+
+- back in the "sign-up" file, within the submit() create an error check, in case the needed data is not present, before running the createUser()
+- import the createUser() funcion from the lib folder and appwrite.js file
+- use the Alert oject imported from react-native, to create alert error messages
+- next create an try catch block, using the Alert.alert() to create an error message in the catch
+- inside the try, create a result variable that equals the createUser(), be sure to pass in the necessary data
+- be sure the submit() is asynchronous
+- next user the "router" from expo-router to redirect user to home page, using the router.replace()
+
+# Example of Submit() - Sign-Up
+
+- const submit = async () => {
+  if(!form.username || !form.password || !form.email) {
+  Alert.alert('Error', "Please fill in all the fields")
+  }
+  setIsSubmitting(true);
+
+  try {
+  const result = await createUser(form.email, form.password, form.username);
+
+       router.replace('/home')
+
+  } catch (error) {
+  Alert.alert('Error', error.message)
+  }
+  finally {
+  setIsSubmitting(false);
+  }
+  }
+
+# Update Sign In Screen
+
+- the submit() will have a similar structure to that of the "sign up" screen's submit function
+- remove the username form data check, as the username is not required for signing in
+- the submit() will be using the signIn() from appwrite.js file, and not the createUser() since the "user" already exists
+- import the signIn() function from the lib folder and appwrite.js file
+
+# Example of Submit() - Sign-In
+
+- const submit = async () => {
+  if(!form.password || !form.email) {
+  Alert.alert('Error', "Please fill in all the fields")
+  }
+  setIsSubmitting(true);
+
+  try {
+  await signIn(form.email, form.password);
+
+      router.replace('/home')
+
+  } catch (error) {
+  Alert.alert('Error', error.message)
+  }
+  finally {
+  setIsSubmitting(false);
+  }
+  }
+
+# Step 4 Get User Function
+
+- back in the appwrite.js you need to create an function to get existing "user"
+
+# getCurrentUser Function
+
+- export const getCurrentUser = async() => {
+  try {
+  const currentAccount = await account.get();
+
+          if(!currentAccount) throw Error;
+
+          const currentUser = await databases.listDocuments(
+              appwriteConfig.databaseId,
+              appwriteConfig.userCollectionId,
+              [Query.equal('accountId', currentAccount.$id)]
+          )
+
+          if(!currentUser) throw Error;
+
+          return currentUser.documents[0];
+      } catch (error) {
+
+      }
+
+  }
+
+# Function Breakdown
+
+- this function is asynchronous and uses a try catch block to catch errors
+- using the account.get() will collect the data of the currently logged in user, "user account with a active session"
+- next check if a current user is logged in & if not throw an error
+- if no errors occur, then next is to get the user data from the "users" collection, using the databases.listDocuments()
+- databases.listDocuments() needs 3 params, first the databaseId for the database you are using, next the collection ID for the collection your using (userCollectionId) and the [Query] object
+- the [Query] object has function to change the type of search or query for data from a database collection, in this case you want to use the [Query.equal('collectionDataAttributeId', query data)]
+- [Query.equal()] for 1st param needs the id attribute for the collection data, like "accountId" for a collection of user accounts & query data to use in the search of the collection, like a username or account id
+- the databases.listDoucments() returns a list of collection data documents inside an array, use the 0 index to get the queried user account, then return it
+
+# Other Queries
+
+- [Query.orderDesc('attribute', query limit)] is a query method on how to limit or filter out returned documents
+- this query will return documents in descending order, based off the attribute passsed in, like $createdAt for intance and the query limit, can be set to return only a set number of results
+
+# Example
+
+-
+
+# Step 5 Session Check UseState
+
+- next we need the app to be able to check if a "user" session exists or if a "user" is already signed in
+- first create a context folder and within that folder create an GlobalProvider.js file
+- first import { createContext, useContext, useEffect, useState } from "react";
+- similar to regular react create a global context - const GlobalContext = createContext();
+- next create an user global context export - export const useGlobalContext = () => useContext(GlobalContext);
+- next create a GlobalContext provider, this will provide the necessary useState functions and values, to the whole app
+- create 3 useStates, one for to check if a user is logged in, next to store the current user's data & lastly a loading boolean check
+- next is the useEffect()
+
+# Example of useEffect()
+
+- useEffect(()=>{
+  getCurrentUser()
+  .then(response => {
+  if(response) {
+  setIsLoggedIn(true);
+  setUser(response)
+  }
+  else {
+  setIsLoggedIn(false);
+  setUser(null);
+  }
+  })
+  .catch(error => {
+  console.log(error);
+  })
+  .finally(() => {
+  setIsLoading(false);
+  })
+  }, [])
+
+# Function Breakdown
+
+- the get user function created in the previous step is asynchronous and can use the .then() & .catch() functions
+- when calling this function it will return the data for the currently logged in user, within the response value
+- if the user data exists, set the user useState variable to the value of the response, while also setting the isLoggedIn useState to true
+- or if the user data does not exists, set user useState to null, then isLoggedIn to false
+- .finally() will always run no matter the outcome, therefore it will always reset the isLoading check
+- finally within the return() it will return all the functions and useState variables to be use within the whole app
+
+# Example
+
+- return (
+  <GlobalContext.Provider value={{
+            isLoggedIn,
+            setIsLoggedIn,
+            user,
+            setUser,
+            isLoading
+        }}>
+  {children}
+  </GlobalContext.Provider>
+  )
+
+- next wrap the layout stack within a wrapper of the GlobalProvider context you just made
+- this will give the whole app access to values & functions described above
+
+# Example
+
+-     return (
+        <GlobalProvider>
+            <Stack>
+                <Stack.Screen name='index' options={{headerShown: false}} />
+                <Stack.Screen name='(auth)' options={{headerShown: false}} />
+                <Stack.Screen name='(tabs)' options={{headerShown: false}} />
+            </Stack>
+        </GlobalProvider>
+
+  )
+
+- next within the index file import the isLoggedIn & isLoading varaibles from the global context
+- next check if the isLoading is false and if the isLoggedIn value is true, if so redirect the user to the home screen, using the Redirect component from expo router
+
+# Example of Index - at the top of the export default function App(){}
+
+- const { isLoading, isLoggedIn } = useGlobalContext();
+  if(!isLoading && isLoggedIn) return <Redirect href={"/home"} />
+
+# HOME Page Design
+
+- within the home.jsx replace the <view> with a <SafeAreaView>
+- inside the <SafeAreaView> use the <FlatList>, this renders a list of elements
+- <FlatList> necessary props
+- data={[]} stores the data that will be used for the rendered elements
+- keyExtractor={}, this is how you get the key value out of the array item, like if the [{id: 1}] had this value, the keyExtractor={(item) => item.$id} would use a function like this to get the data out
+- renderItem={}, directs how react native will render each item in the list, for intance you would have a text element be rendered with data from the array
+
+# Example of renderItem
+
+- <FlatList
+  data={[{id: 1}, {id: 2}, {id: 3}]}
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+  <Text className="text-3xl">{item.id}</Text>
+  )}
+  />
+
+- example above renders 3 text elements, each with the id value of 1,2 & 3
+- next prop is the ListHeaderComponent={() => ()}, which renders a customizable header component of the list, like an intro or description of what the list contains
+
+# Example
+
+- <FlatList
+  data={[{id: 1}, {id: 2}, {id: 3}]}
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+  <Text className="text-3xl text-white">{item.id}</Text>
+  )}
+  ListHeaderComponent={() => (
+  <View className="my-6 px-4 space-y-6">
+  <View className="justify-between items-start flex-row mb-6">
+  <View>
+  <Text className="font-pmedium text-sm text-gray-100">Welcome Back</Text>
+  <Text className="text-2xl font-psemibold text-white">Brandon</Text>
+  </View>
+  </View>
+  </View>
+  )}
+  />
+
+- the horizontal prop will align the rendered data in a row like or horizontal position
+- a <ScrollView> cannot support vertical and horizontal scrolling at the same time, unlike an <FlatList>
+- therefore it best to wrap an vertical & horizontal <FlatList> in another <FlatList>, because if u put it in an <ScrollView>, it will cause an special error to occur
+- ListEmptyComponent={() => ()} prop lets you define what to do when the <FlatList> is empty, like rendering an "is empty" message
+- its best to have it render an emptystate or message component
+
+# Example of ListEmptyComponent
+
+- <FlatList
+  data={[{id: 1}, {id: 2}, {id: 3}]}
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+  <Text className="text-3xl text-white">{item.id}</Text>
+  )}
+  ListHeaderComponent={() => (
+  <View className="my-6 px-4 space-y-6">
+  <View className="justify-between items-start flex-row mb-6">
+  <View>
+  <Text className="font-pmedium text-sm text-gray-100">Welcome Back</Text>
+  <Text className="text-2xl font-psemibold text-white">Brandon</Text>
+  </View>
+  <View className="mt-1.5">
+  <Image className="w-9 h-10" resizeMode='contain' source={images.logoSmall} />
+  </View>
+  </View>
+  <SearchInput />
+  <View className="w-full flex-1 pt-5 pb-8">
+  <Text className="text-gray-100 text-lg font-pregular mb-3">Latest Videos</Text>
+  <Trending posts={[{id: 1}, {id: 2}, {id: 3}] ?? []}/>
+  </View>
+  </View>
+  )}
+  ListEmptyComponent={() => (
+  <EmptyState title="No Videos Found" subtitle="Be the first one to upload a video"/>
+  )}
+  />
+
+- refreshControl={<RefreshControll />}, this allows you to refresh specific content on a screen, like a refreshing a user's uploaded videos
+- you would usually do this my swiping down and see a refresh icon
+- this component and prop, has a related function and useStaate that goes with it
+
+# Example of RefreshControl
+
+- const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+  setRefreshing(true);
+  // re call videos -> if any new videos appeared
+  setRefreshing(false)
+  }
+
+  return (
+  <SafeAreaView className="bg-primary h-full">
+  <FlatList
+  data={[{id: 1}, {id: 2}, {id: 3}]}
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+  <Text className="text-3xl text-white">{item.id}</Text>
+  )}
+  ListHeaderComponent={() => (
+  <View className="my-6 px-4 space-y-6">
+  <View className="justify-between items-start flex-row mb-6">
+  <View>
+  <Text className="font-pmedium text-sm text-gray-100">Welcome Back</Text>
+  <Text className="text-2xl font-psemibold text-white">Brandon</Text>
+  </View>
+  <View className="mt-1.5">
+  <Image className="w-9 h-10" resizeMode='contain' source={images.logoSmall} />
+  </View>
+  </View>
+  <SearchInput />
+
+  <View className="w-full flex-1 pt-5 pb-8">
+  <Text className="text-gray-100 text-lg font-pregular mb-3">Latest Videos</Text>
+  <Trending  posts={[{id: 1}, {id: 2}, {id: 3}] ?? []}/>
+  </View>
+  </View>
+  )}
+  ListEmptyComponent={() => (
+  <EmptyState title="No Videos Found" subtitle="Be the first one to upload a video"/>
+  )}
+  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}
+  />
+  </SafeAreaView>
+  )
+
+# FlatList On Scroll Item View Changes
+
+- <FlatList> has a onViewAbleItemsChanges={} which is a function called when the viewability of rows changes or the user scrolls past or focuses on an item
+- the viewabilityConfig={} lets you change the function or settings of the onViewAbleItemsChanges, like settign the threshold % of how much of the flat list item must be within view to activate the onViewAbleItemsChanges
+- the contentOffset is used to manually set the starting scroll offset, this sets when to apply the visisbility percentage threshold from the viewabilityConfig
+
+# Example of FlatList with On View props
+
+- <FlatList
+  data={posts}
+  horizontal
+  keyExtractor={(item) => item.$id}
+  renderItem={({ item }) => (
+  <TrendingItem activeItem={activeItem} item={item} />
+  )}
+  onViewableItemsChanged={viewableItemsChanged}
+  viewabilityConfig={{
+      itemVisiblePercentThreshold: 70,
+    }}
+  contentOffset={{ x: 170 }}
+  />
+
+# Testing Dummy Data
+
+- go to appwrite database for teh "videos" and create 3 dummy video documents
+- next go to appwrite.js and create an getAllPosts()
+
+# Function getAllPosts()
+
+- export const getAllPosts = async () => {
+  try {
+  const posts = await databases.listDocuments(
+  appwriteConfig.databaseId,
+  appwriteConfig.videoCollectionId,
+  )
+
+          return posts.documents;
+      } catch (error) {
+          throw error;
+      }
+
+  }
+
+# Function Breakdown
+
+- use the databases object's listDocument() ,set to a variable, to get all data from the specified database and collection
+- return this variable using the .documents property to only return the raw collection data
+
+# Create a custom hook
+
+- requesting data happens on most the pages or screen, thereforce creating a custom hook to get these get data functions is clean and efficient
+- create a useAppwrite.js file or any suitable name js file to store the custom hook
+
+# Custom Hook
+
+- import { useEffect, useState } from "react";
+
+const useAppwrite = (fn) => {
+const [ data, setData] = useState([]);
+const [isLoading, setIsLoading] = useState(true)
+
+    const fetchData = async () => {
+        setIsLoading(true);
+
+        try {
+            const response = await fn();
+
+            setData(response);
+        } catch (error) {
+            Alert.alert('Error', error.message)
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    useEffect(()=>{
+        fetchData();
+    }, [])
+
+    const refetch = () => fetchData();
+
+    return { data , isLoading, refetch }
+
+}
+
+export default useAppwrite;
+
+# Breakdown
+
+- import useEffect and useState
+- this function will have a function fn() passed into it, to run, for example you would pass in the getAllPosts()
+- create a data & isLoading useState variables, data stores the returned data from the passed in function, isLoading is a check to make sure mutiple request are sent in close intervals
+  -within the useAppwrite() create a fetchData(), which is asynchronous
+- the fetchData() within the try block will have a var set to the response or returned value of the passed in function
+- then use setData to set the value of the data useState to equal that returned data
+- below the fetchData(), use an useEffect() to call the fetchData function, so that when ever the hook data useState is used in another file it holds the passed in functions returned data
+- create a refetch() that calls the fetchData(), so that it can be called to rerun or update the data returned from the passed in function
+- return the data usetate, isLoading and refetch() in an object, so that it can be destructured and used in other files
+- finally export default useAppwrite
+
+# Using hook
+
+- deconstruct the data, isLoading and refetch() variables and function from the useAppwrtie();
+- back in the home file, under the onRefresh() and between the setRefreshing(), call the refetch() function, from the imported useAppwrite() hook
+- then within the <FlatList> use the data.posts value for the data={} prop, to render the needed content, like the titles for the dummy videos created earlier
+
+# Example
+
+- const onRefresh = async () => {
+  setRefreshing(true);
+  await refetch();
+  // re call videos -> if any new videos appeared
+  setRefreshing(false)
+  }
+- <FlatList
+  data={posts}
+  ....other code
+  />
+
+# Search [Query].jsx & Search Input Components
+
+- [query].jsx file allows you to extract the value of the search or query from the screen
+- within the [query].jsx import useLocalParams from expo-router and use the {query} varaible from it - const { query } = useLocalSearchParams();
+- to test use the query varaible inside a <Text>{query}</Text>
+- within the <SearchInput> import the usePathname() from expo-router and set it to a pathname variable - const pathname = usePathname();
+- next create an useState var for the query search value
+- replace the value={} on the <TextInput> to the query useState var
+- change the onChangeText{(e) => setQuery(e)} to set the query useState to the event of the text input
+- next on the search button touchable opacity, use the onPress={() => {}}, with conditions to check if the query value is empty and if so return an error message
+- but if its not empty, use the startsWith() from the pathname var to check if the path of the current screen starts with a value of '/search' and if so use the router.setParams() method to set the router local params to the query
+- else if it doesn't start with '/search' use router.push() to move the user to the search query screen
+
+# Example Of SearchInput.jsx
+
+-import { View, Text, TextInput, Image, Alert } from 'react-native'
+import React, { useState } from 'react'
+import { icons } from '../constants';
+import { TouchableOpacity } from 'react-native';
+import { router, usePathname } from 'expo-router';
+
+const SearchInput = () => {
+
+    const pathname = usePathname();
+    const [query, setQuery] = useState('')
+
+return (
+<View className="flex-row bg-black-100 space-x-4 w-full rounded-2xl items-center border-black-200 px-1 h-16 mt-4 px-4 focus:border-secondary">
+<TextInput className={`flex-1  text-base text-white mt-0.5 `} value={query} placeholder={"Search for a video topic"} placeholderTextColor={"#cdcde0"} onChangeText={(e) => setQuery(e)} />
+<TouchableOpacity onPress={() => {
+if(!query) {
+Alert.alert('Missing query', "Please input something to search results across database")
+}
+if(pathname.startsWith('/search')) router.setParams({query})
+else router.push(`/search/${query}`)
+}}>
+<Image  source={icons.search} className="w-5 h-5" resizeMode='contain' />
+</TouchableOpacity>
+</View>
+)
+}
+
+export default SearchInput
+
+# Example of [Query].jsx file
+
+- import { View, Text } from 'react-native'
+  import React from 'react'
+  import { useLocalSearchParams } from 'expo-router'
+  import { SafeAreaView } from 'react-native-safe-area-context';
+
+const Search = () => {
+const { query } = useLocalSearchParams();
+return (
+<SafeAreaView className="bg-primary h-full">
+<Text className="text-3xl text-white">{query}</Text>
+</SafeAreaView>
+)
+}
+
+export default Search
+
+# Create function to Search Through Database Documents
+
+- copy the getLatestPosts from the appwrite file and change the name to searchPosts
+- within this new searchPosts make it accept a query value as a param and then using the [Query.search()], with the title of the document as the first function param and second value as the query value
+- next within the [query].jsx file use the useAppwrite hook to call the searchPosts(), be sure to call the function with a callback function when passing it into the hook
+
+# Example of searchPosts Function
+
+- export const searchPosts = async (query) => {
+  try {
+  const posts = await databases.listDocuments(
+  appwriteConfig.databaseId,
+  appwriteConfig.videoCollectionId,
+  [Query.search('title', query)]
+  )
+  return posts.documents;
+  } catch (error) {
+  throw error;
+  }
+  }
+
+# Example Of Use of Custom Hook
+
+- const { data: posts, refetch } = useAppwrite(() => searchPosts(query));
+
+const { query } = useLocalSearchParams();
+
+useEffect(()=>{
+refetch();
+}, [query])
+
+# Setting Up Collection Indexes
+
+- back on the intended collection's dashboard, back on appwrite, click the indexes tab and click create index
+- for the new index set the attribute u want to make a searchable index for queries, set a key name for the new index and set the index type to fullText
+
+# Create Screen - Database document creation
+
+- back in the create screen or file, use snippet below to create the necessary form fields, titles and buttons required
+
+# snippet
+
+- import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native'
+  import React, { useState } from 'react'
+  import { SafeAreaView } from 'react-native-safe-area-context'
+  import FormField from '../../components/FormField'
+  import { Video , ResizeMode } from 'expo-av'
+  import { icons } from '../../constants'
+  import CustomButton from '../../components/CustomButton'
+
+const Create = () => {
+const [form, setForm] = useState({
+title: '',
+prompt: '',
+video: null,
+thumbnail: null,
+})
+
+const [uploading, setUploading] = useState(false)
+
+const submit = () => {
+
+}
+
+return (
+<SafeAreaView className="bg-primary h-full">
+<ScrollView className="my-6 px-4">
+<Text className="text-2xl text-white font-psemibold">
+Upload Video
+</Text>
+
+        <FormField title={"Video Title"} value={form.title} placeholder={"Give your video a catchy title..."} handleChangeText={(e) => setForm({...form, title: e})} otherStyles={"mt-10"} />
+
+          <View className="space-y-2 mt-7">
+            <Text className="text-base text-gray-100 font-pmedium">
+              Upload Video
+            </Text>
+            <TouchableOpacity>
+              {form.video ? (
+                <Video source={{uri: form.video.uri}} className="w-full h-64 rounded-2xl" resizeMode={ResizeMode.COVER} isLooping/>
+              ): (
+                <View className="w-full h-40 px-4 bg-black-100 rounded-xl justify-center items-center">
+                  <View className="w-14 h-14 border border-dashed border-secondary-100 justify-center items-center">
+                    <Image source={icons.upload} resizeMode='contain' className="w-1/2 h-1/2" />
+                  </View>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          <View className="mt-7 space-y-2">
+            <Text className="text-base text-gray-100 font-pmedium">
+              Thumbnail Image
+            </Text>
+            <TouchableOpacity>
+              {form.thumbnail ? (
+                <Image source={{uri: form.thumbnail.uri}} className="w-full h-64 rounded-2xl" resizeMode="cover" />
+              ): (
+                <View className="w-full h-16 flex-row space-x-2  px-4 bg-black-100 border-2 border-black-200 rounded-xl justify-center items-center">
+                  <Image source={icons.upload} resizeMode='contain' className="w-5 h-5" />
+                  <Text className="text-sm text-gray-100 font-pmedium">Choose a file</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+          <FormField title={"AI Prompt"} value={form.title} placeholder={"The prompt you used to create this video"} handleChangeText={(e) => setForm({...form, title: e})} otherStyles={"mt-7"} />
+          <CustomButton  title={"Submit & Publish"} handlePress={submit} containerStyles={"mt-7"} isLoading={uploading}/>
+      </ScrollView>
+    </SafeAreaView>
+
+)
+}
+
+export default Create
+
+# Create Upload Functions
+
+# Document Picker Method
+
+- install Document Picker from the expo, this needed to select local files from a device to upload
+- run npm install expo-document-picker, then import it to the intended file - import \* as DocumentPicker from 'expo-document-picker'
+- back in the create file, create an openpicker function, which will be used to select files from the device
+
+# Function
+
+- const openPicker = async (selectType) => {
+  const result = await DocumentPicker.getDocumentAsync({
+  type: selectType === 'image'? ['image/png', 'image/jpg']:['video/mp4', 'video/gif']
+  })
+  }
+
+# Breakdown
+
+-the function accepts a param which should equal the type of file you trying to upload, ie 'video'
+
+- create a variable to store the selected file,
+- using the DocumentPicker.getDocumentAsync({}) you can configure it to allow a user to select a specified type of file from their device - type: condition ? ['filetype']:['filetype']
+- next create some condition checks to see if the use has selected an file or canceled their selection
+
+# Code snippet
+
+- const openPicker = async (selectType) => {
+  const result = await DocumentPicker.getDocumentAsync({
+  type: selectType === 'image'? ['image/png', 'image/jpg']:['video/mp4', 'video/gif']
+  })
+
+  if(!result.canceled) {
+  if(selectType === 'image') {
+  setForm({...form, thumbnail: result.assets[0]})
+  }
+  if(!result.canceled) {
+  if(selectType === 'video') {
+  setForm({...form, video: result.assets[0]})
+  }
+  }
+  } else {
+  setTimeout(() => {
+  Alert.alert('Document picked', JSON.stringify(result, null, 2))
+  }, 100);
+  }
+  }
+
+# Breakdown
+
+- result.canceled is boolean that is true if the user cancels their file selection, use it to check and respond with an error message or set the form state values to newly uploaded file data
+- results.assets[0] holds the value of the selected file, like in a video's case, the uri
+
+# Expo Image Picker
+
+- install it with npx expo install expo-image-picker
+- this method is similar to the Document Picker method
+- import the expo image picker - import \* as ImagePicker from 'expo-image-picker'
+- the only part of the Document picker that has to change is the DocumentPicker.getDocumentAsync()
+
+# Snippet - Change from Document Picker to Expo Image Picker
+
+# Before
+
+- const result = await DocumentPicker.getDocumentAsync({
+  type: selectType === 'image'? ['image/png', 'image/jpg']:['video/mp4', 'video/gif']
+  })
+
+# After
+
+- let result = await ImagePicker.launchImageLibraryAsync({
+
+  mediaTypes: selectType === 'image' ? ImagePicker.MediaTypeOptions.Images : ImagePicker.MediaTypeOptions.Videos,
+  allowsEditing: true,
+  aspect: [4, 3],
+  quality: 1,
+  });
+
+# Appwrite change for Image Picker method
+
+- the format for the file is not as it was in the document picker, so inside the uploadFile() change the asset variable to format the file data for the storage.createFile() using this new method
+
+# Before
+
+-export const uploadFile = async(file, type) => {
+if(!file) return;
+
+    const { mimeType, ...rest } = file;
+    const asset = { type: mimeType, ...rest };
+
+    try {
+        const uploadedFile = await storage.createFile(
+            appwriteConfig.storageId,
+            ID.unique(),
+            asset
+        );
+
+        const fileUrl = await getFilePreview(uploadedFile.$id, type)
+        return fileUrl;
+    } catch (error) {
+        throw error;
+    }
+
+}
+
+# After
+
+- export const uploadFile = async(file, type) => {
+  if(!file) return;
+
+      const asset = {
+          name: file.fileName,
+          type: file.mimeType,
+          size: file.fileSize,
+          uri: file.uri,
+      };
+
+      try {
+          const uploadedFile = await storage.createFile(
+              appwriteConfig.storageId,
+              ID.unique(),
+              asset
+          );
+
+          const fileUrl = await getFilePreview(uploadedFile.$id, type)
+          return fileUrl;
+      } catch (error) {
+          throw error;
+      }
+
+  }
+
+- next within the submit() inside the create file, create a try catch & finally block that will alert user if post is uploaded successfully, unsuccessfully and finally clearing the form
+
+# Snippet
+
+- const submit = () => {
+  if(!form.prompt || !form.thumbnail || !form.video || !form.title) {
+  return Alert.alert("Please fill in all the fields")
+  }
+  setUploading(true);
+
+  try {
+  // Appwrite code goes here
+
+      Alert.alert('Succes', 'Post uploaded successfully')
+      router.push('/home')
+
+  } catch (error) {
+  Alert.alert('Error', error.message)
+  } finally {
+  setForm({
+  title: '',
+  prompt: '',
+  video: null,
+  thumbnail: null,
+  })
+  setUploading(false);
+  }
+  }
+
+# Create appwrite create or createVideo function
+
+- first you need to import Storage & initialize the Storage object from appwrite
+- towards the top of the appwrite.js file
+
+# Example
+
+- import { Account, Avatars, Client, Storage, Databases, ID, Query } from 'react-native-appwrite';
+- const storage = new Storage(client);
+- next step is create 3 functions to create a new storage item in the database & create a new document
+
+# CreateVideo Function
+
+- export const createVideo = async (form) => {
+  try {
+  const { thumbnailUrl, videoUrl } = await Promise.all([
+  uploadFile(form.thumbnail, 'image'),
+  uploadFile(form.video, 'video')
+  ]);
+
+  const newPost = await databases.createDocument(
+  appwriteConfig.databaseId,
+  appwriteConfig.videoCollectionId,
+  ID.unique(),
+  {
+  title: form.title,
+  thumbnail: thumbnailUrl,
+  video: videoUrl,
+  prompt: form.prompt,
+  creator: form.userId
+  }
+  )
+
+  return newPost;
+  } catch (error) {
+  throw error;
+  }
+
+  }
+
+# Breakdown
+
+- the createVideo plan takes in the form data and uses that info to create a new document and storage item
+- within the try block, you want to destructure a thumbnailUrl & videoUrl from a Promise.all([]) function, which will use one of the other functions - uploadFile()
+- the uploadFile() 1st param is the file data (the video or thumbnail data) and the 2nd param is the type of file it will be ('image' or 'video')
+
+# uploadFile()
+
+- export const uploadFile = async(file, type) => {
+  if(!file) return;
+
+      const { mimeType, ...rest } = file;
+      const asset = { type: mineType, ...rest };
+
+      try {
+          const uploadedFile = await storage.createFile(
+              appwriteConfig.storageId,
+              ID.unique(),
+              asset
+          );
+
+          const fileUrl = await getFilePreview(uploadFile.$id, type)
+          return fileUrl;
+      } catch (error) {
+          throw error;
+      }
+
+  }
+
+# Breakdown
+
+- this function is asynchronous and uses the passed in file data and type to create a storage item for the intended file
+- first check if the file data exists and if not return or exit the function
+- next destructure the data from the passed in file - { mineType, ...rest} - rest represents all the other data from the file object
+- next set the destructured data to a asset variable and set the data to a type: property, this format is necessary for using the createFile() function from the storage appwrite object
+- the first param is the storage bucket id, then using the ID object create an unique id for the storage bucket item
+- lastly use the asset variable u created
+- next create a fileUrl variable and set it to the last of the 3 functions - getFilePreview()
+
+# getFilePreview()
+
+- export const getFilePreview = async(fileId, type) => {
+  let fileUrl;
+
+      try {
+          if(type === 'video') {
+              fileUrl = storage.getFileView(appwriteConfig.storageId,fileId);
+          } else if (type === 'image') {
+              fileUrl = storage.getFilePreview(appwriteConfig.storageId, fileId, 2000, 2000, 'top', 100);
+          } else {
+              throw new Error('Invalid file type')
+          }
+
+          if(!fileUrl) throw new Error('Invalid file url');
+          return fileUrl;
+      } catch (error) {
+          throw error;
+      }
+
+  }
+
+# Breakdown
+
+- this function is asynchronous
+- this function's params are the uploadFile variable that equal the newely create storage bucket item or file & the 2nd param is the type of file passed into the uploadFile()
+- create an fileUrl variable and do not set it to a value
+- within the try block, check if the type param is a video or image, if either is true, set the fileUrl to equal the value return by the storage.getFileView()
+- the getFileView() params are the storage bucket file id and type ('image') of file being used
+- if type is 'video' use the storage.getFilePreviewView(), which needs the appwrite storage ID & storage bucket file id, to create an image url for use back in the your app
+- if type is 'image' use the storage.getFileView(), which needs the appwrite storage ID & storage bucket file id, to create an image url for use back in the your app
+- once getFileView() or getFilePreviewView() creates the file's url return the value to be used in the video creation function
