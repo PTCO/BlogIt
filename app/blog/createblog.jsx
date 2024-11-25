@@ -27,6 +27,9 @@ const createblog = () => {
         if(!form.title || !form.text || !form.thumbnails) {
             return Alert.alert('Please fill in all fields')
         }
+        if(form.title.length < 8) {
+            return Alert.alert('Blog title should be at least 8 characters')
+        }
         setisSubmitting(true);
         
         try {

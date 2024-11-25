@@ -14,14 +14,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "package": "com.ptco.aora"
+      "package": "com.dtco.blogit"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ptco.aora"
+      "package": "com.dtco.blogit",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",

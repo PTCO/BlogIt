@@ -21,14 +21,11 @@ const GlobalProvider = ({children}) => {
             } else {
                 setUser(null);
                 setIsLoggedIn(false);
+                router.replace('/')
             }
         })
         .catch( error => {
-            const a = JSON.parse(JSON.stringify(error));
-            if(a.code === 401) {
-                return
-            }
-            throw new Error('Error', error);
+            router.replace('/')
         })
         .finally(() => {
             setIsLoading(false);

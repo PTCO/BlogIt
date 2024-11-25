@@ -1,6 +1,6 @@
 import { View, Text, Image, FlatList, ScrollView, Alert } from 'react-native'
 import React, { useState } from 'react'
-import { getCurrentUser, getSavedBlogs, signOut, updateProfile } from '../../lib/appwrite'
+import { deleteAccount, getCurrentUser, getSavedBlogs, signOut, updateProfile } from '../../lib/appwrite'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useGlobalContext } from '../../context/GlobalProvider'
 import { router } from 'expo-router'
@@ -52,8 +52,36 @@ const Profile = () => {
   }
 
   const submit = async(submission) => {
+    const reset = () => {
+      setForm({
+        currentUsername: '',
+        newUsername: '',
+        newAvatar: '',
+        currentEmail: '',
+        newEmail: '',
+        currentPassword: '',
+        newPassword: '',
+        userId: user.$id,
+        avatarfileid: user.avatarimageid
+      })
+      setSubmitting(false);
+    }
+
     try {
       setSubmitting(true);
+
+      if(submission === 'deletion') {
+        if(form.currentUsername === user?.username) {
+          await deleteAccount(user.$id)
+          .then(()=>{
+            reset()
+            setIsLoggedIn(false);
+            router.replace('/')
+          })
+        }
+        return
+      }
+
       if(submission === 'username') {
         if(!form.currentUsername || !form.newUsername) {
           return Alert.alert('Please complete all fields for the form you are completing')
@@ -83,18 +111,7 @@ const Profile = () => {
     } catch (error) {
       Alert.alert(error.message)
     } finally {
-      setForm({
-        currentUsername: '',
-        newUsername: '',
-        newAvatar: '',
-        currentEmail: '',
-        newEmail: '',
-        currentPassword: '',
-        newPassword: '',
-        userId: user.$id,
-        avatarfileid: user.avatarimageid
-      })
-      setSubmitting(false);
+      reset()
     }
   }
 
@@ -155,6 +172,15 @@ const Profile = () => {
           <FormField title={"Current password"} textStyles={"font-opensansItalic border-b-2 pb-2 mb-2 border-primary-alt text-secondary text-2xl"} containerStyles={"w-full mb-2"} value={form.currentPassword} handleChangeText={(e) => setForm({...form, currentPassword: e})}/>
           <FormField title={"Create a new password"} textStyles={"font-opensansItalic border-b-2 pb-2 mb-2 border-primary-alt text-secondary text-2xl"} containerStyles={"w-full mb-2"} value={form.newPassword} handleChangeText={(e) => setForm({...form, newPassword: e})}/>
           <CustomButton title={"Update"} containerStyles={"bg-primary mt-3 h-[50px] w-1/2 ml-auto"} textStyles={"font-lobster text-secondary text-lg"} handlePress={() => submit('password')}/>
+        </View>
+        <Text className="text-3xl text-center text-secondary mx-auto mt-7 w-full  py-2 font-lobster">Account Deletion</Text>
+        <View className="w-full h-auto justify-center bg-[#303030] shadow-xl rounded-xl pt-2 pb-4 px-4 mt-2 mb-9">
+          <Text className="font-opensansItalic mb-1 text-secondary text-xl">When account deletion is requested, the following data is "deleted" & "lost":</Text>
+          {['Acccount data', 'Account blog posts', 'Blog post data, i.e "images"', 'Account saved blogs'].map( text => (
+            <Text key={text} className="font-opensansItalic text-secondary text-xl text-secondary border p-1 pl-2 bg-primary border-primary rounded-xl my-1.5 w-[75%]">{text}</Text>
+          ))}
+          <FormField title={`Enter username "${user?.username}"`} textStyles={"font-opensansItalic border-b-2 pb-2 mb-2 mt-3 border-primary-alt text-secondary text-2xl"} containerStyles={"w-full mb-2"} value={form.currentUsername} handleChangeText={(e) => setForm({...form, currentUsername: e})}/>
+          <CustomButton title={"Delete Account"} containerStyles={"bg-primary mt-3 h-[50px] w-1/2 ml-auto"} textStyles={"font-lobster text-secondary text-lg"} handlePress={() => submit('deletion')}/>
         </View>
         <View className="border-t-2 border-primary pt-6">
           <GlobalFooter />

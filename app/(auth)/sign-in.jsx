@@ -30,7 +30,7 @@ const SignIn = () => {
       const result = await getCurrentUser();
       setUser(result);
       setIsLoggedIn(true);
-
+      
       router.replace('/home');
     } catch (error) {
       Alert.alert('Error', error.message);
